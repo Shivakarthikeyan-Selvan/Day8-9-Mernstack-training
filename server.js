@@ -1,14 +1,25 @@
-const app=require('express')
-const server = app()
-
-const mongoose=require('mongoose')
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 require('dotenv').config();
-const MongoUri=process.env.Mongo_Uri;
-mongoose.connect(MongoUri)
-.then(()=>console.log('connected to mongodb atlas'))
-.catch((error)=>console.error('mondb connection error',error))
 
-server.get('/',(req,res)=>{
-    res.end("hello from express");
-})
-server.listen(3050)
+const app = express();
+
+const quizRoutes = require('./routes/quizRoutes');
+const authRoutes = require('./routes/authRoutes');  // ✅ Add This
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Routes
+app.use('/api/quiz', quizRoutes);
+app.use('/api/auth', authRoutes);   // ✅ Add This
+
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log('MongoDB Connected ✅');
+    app.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));
+  })
+  .catch(err => console.log('MongoDB Error:', err));
